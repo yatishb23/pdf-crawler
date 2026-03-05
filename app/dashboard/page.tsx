@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
-  Plus,
   Download,
   ExternalLink,
   FileText,
@@ -158,7 +157,7 @@ export default function Dashboard() {
 function SkeletonCard() {
   return (
     <div className="bg-zinc-900/40 border border-zinc-800 rounded-lg overflow-hidden">
-      <Skeleton className="aspect-[3/4] w-full bg-zinc-800" />
+      <Skeleton className="aspect-3/4 w-full bg-zinc-800" />
 
       <div className="p-4 space-y-3">
         <Skeleton className="h-3 w-3/4 bg-zinc-800" />
@@ -232,7 +231,7 @@ function PDFCard({ book }: { book: BookResult }) {
       animate={{ opacity: 1, y: 0 }}
       className="group bg-zinc-900/40 border border-zinc-800 rounded-lg overflow-hidden hover:border-zinc-700 hover:-translate-y-1 transition-all duration-300"
     >
-      <div className="aspect-[3/4] bg-zinc-900 flex items-center justify-center overflow-hidden">
+      <div className="aspect-3/4 bg-zinc-900 flex items-center justify-center overflow-hidden">
         {thumbnail ? (
           <img
             src={thumbnail}

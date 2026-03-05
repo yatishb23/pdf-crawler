@@ -224,10 +224,10 @@ function PDFCard({ book }: { book: BookResult }) {
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0 },
       }}
-      className="group bg-zinc-900/10 border border-zinc-900 rounded-2xl overflow-hidden hover:border-zinc-700 transition-all duration-500 shadow-2xl shadow-white/[0.02]"
+      className="group bg-zinc-900/10 border border-zinc-900 rounded-2xl overflow-hidden hover:border-zinc-700 transition-all duration-500 shadow-2xl shadow-white/2"
     >
            {" "}
-      <div className="aspect-[4/5] bg-zinc-950/50 flex items-center justify-center relative overflow-hidden">
+      <div className="aspect-4/5 bg-zinc-950/50 flex items-center justify-center relative overflow-hidden">
                {" "}
         {thumbnail ? (
           <img

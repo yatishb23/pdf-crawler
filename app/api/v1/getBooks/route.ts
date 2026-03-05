@@ -1,5 +1,8 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
-import { searchBook,BookResult } from "@/lib/crawler";
+import { searchBook, BookResult } from "@/lib/crawler";
+import { redis } from "@/lib/redis";
+
+const CACHE_EXPIRATION = 60 * 60 * 24; 
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,6 +16,17 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const cacheKey = `search:${bookName.toLowerCase().replace(/\s+/g, ":")}`;
+
+    try {
+      const cachedResults = await redis.get(cacheKey);
+      if (cachedResults) {
+        return NextResponse.json(JSON.parse(cachedResults as string));
+      }
+    } catch (cacheError) {
+      console.error("Redis Cache Error:", cacheError);
+    }
+
     const results: BookResult[] = await searchBook(bookName);
 
     if (results.length === 0) {
@@ -20,6 +34,14 @@ export async function GET(req: NextRequest) {
         { message: "No books found" },
         { status: 404 }
       );
+    }
+
+    try {
+      await redis.set(cacheKey, JSON.stringify(results), {
+        EX: CACHE_EXPIRATION,
+      });
+    } catch (cacheError) {
+      console.error("Redis Cache Set Error:", cacheError);
     }
 
     return NextResponse.json(results);

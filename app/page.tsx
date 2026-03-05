@@ -1,15 +1,14 @@
 "use client"
 
+import VisitorTracker from "@/components/VisitorTrack";
 import { motion } from "framer-motion"
 import Link from "next/link"
 
 export default function Home() {
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-black px-6 pt-24 text-white selection:bg-white selection:text-black">
-      {/* Subtle Ambient Background */}
       <div className="absolute inset-x-0 top-0 -z-10 h-200 w-full [background:radial-gradient(circle_at_50%_-10%,#18181b_0%,transparent_70%)] opacity-50" />
 
-      {/* Minimalism: Hero Content Only */}
       <section className="flex w-full max-w-3xl flex-col items-center text-center">
         <motion.h1 
           initial={{ opacity: 0, y: 15 }}
@@ -31,7 +30,6 @@ export default function Home() {
           crawler reads, understands, and extracts exactly what you need.
         </motion.p>
         
-        {/* Core CTA */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -64,8 +62,7 @@ export default function Home() {
           transition={{ duration: 1.5, delay: 1 }}
           className="mt-24 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.25em] text-zinc-800"
         >
-          <div className="w-1.5 h-1.5 bg-zinc-800 rounded-full"></div>
-          <span>Built for learners</span>
+          <VisitorTracker/>
         </motion.div>
       </section>
     </main>
