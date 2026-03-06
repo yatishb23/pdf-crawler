@@ -26,7 +26,7 @@ export default function Home() {
           transition={{ duration: 1, delay: 0.3 }}
           className="text-lg md:text-xl text-zinc-500 mb-12 max-w-lg leading-relaxed mix-blend-plus-lighter"
         >
-          Transform thousands of pages into instant knowledge. Our AI-driven 
+          Transform thousands of pages into instant knowledge. Our
           crawler reads, understands, and extracts exactly what you need.
         </motion.p>
         

@@ -23,8 +23,8 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "PDF Crawler - Smart Extraction",
-  description: "Extract data from PDFs with AI-powered intelligence.",
+  title: "bookcrawler.io",
+  description: "Extract data from PDFs with web crawlers.",
 };
 
 export default function RootLayout({
