@@ -7,7 +7,7 @@ const CACHE_EXPIRATION = 60 * 60 * 24;
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const bookName = searchParams.get("q");
+    let bookName = searchParams.get("q");
 
     if (!bookName) {
       return NextResponse.json(
@@ -15,8 +15,10 @@ export async function GET(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    const cacheKey = `search:${bookName.toLowerCase().replace(/\s+/g, ":")}`;
+    bookName = bookName
+      .trim()              
+      .replace(/\s+/g, " ")
+    const cacheKey = `search:${bookName.toLowerCase()}`;
 
     try {
       const cachedResults = await redis.get(cacheKey);

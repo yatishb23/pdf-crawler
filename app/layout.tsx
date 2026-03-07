@@ -23,8 +23,39 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "bookcrawler.io",
-  description: "Extract data from PDFs with web crawlers.",
+  title: {
+    default: "bookcrawler.io - AI-Powered Book Reading Tool",
+    template: "%s | bookcrawler.io",
+  },
+  description: "Extract data from books with intelligent web crawlers. Read, parse, and analyze any book with our AI-powered tool. Transform documents into actionable knowledge.",
+  applicationName: "bookcrawler.io",
+  referrer: "origin-when-cross-origin",
+  keywords: [
+    "book crawler",
+    "book reader",
+    "PDF crawler",
+    "PDF reader",
+    "document parser",
+    "web crawler",
+    "PDF analysis",
+    "text extraction",
+  ],
+  authors: [{ name: "Yatish Badgujar" }],
+  colorScheme: "dark",
+  creator: "bookcrawler.io",
+  publisher: "bookcrawler.io",
+  category: "Technology",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+  },
 };
 
 export default function RootLayout({
