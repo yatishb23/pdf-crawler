@@ -1,11 +1,13 @@
 import { createClient, RedisClientType } from "redis";
 
 declare global {
-  var redis: RedisClientType | undefined;
+  var redisClient: RedisClientType | undefined;
+  var redisConnectPromise: Promise<void> | undefined;
+  var redisErrorListenerAttached: boolean | undefined;
 }
 
-export const redis: RedisClientType =
-  global.redis ??
+const redisClient: RedisClientType =
+  globalThis.redisClient ??
   createClient({
     username: "default",
     password: process.env.REDIS_PASSWORD,
@@ -16,24 +18,26 @@ export const redis: RedisClientType =
     },
   });
 
-if (!global.redis) {
-  global.redis = redis;
+globalThis.redisClient = redisClient;
 
-  redis.on("error", (err) => {
+if (!globalThis.redisErrorListenerAttached) {
+  redisClient.on("error", (err) => {
     console.error("Redis Error:", err);
   });
-
-  (async () => {
-    if (!redis.isOpen) {
-      await redis.connect();
-      console.log("Redis connected");
-
-      try {
-        await redis.sendCommand(["CLIENT", "KILL", "TYPE", "normal"]);
-        console.log("Old Redis clients cleared");
-      } catch (err) {
-        console.error("Failed to clear clients:", err);
-      }
-    }
-  })();
+  globalThis.redisErrorListenerAttached = true;
 }
+
+if (!redisClient.isOpen) {
+  globalThis.redisConnectPromise ??= redisClient
+    .connect()
+    .then(() => undefined)
+    .catch((err) => {
+      console.error("Redis Connection Error:", err);
+      throw err;
+    })
+    .finally(() => {
+      globalThis.redisConnectPromise = undefined;
+    });
+}
+
+export const redis: RedisClientType = redisClient;
