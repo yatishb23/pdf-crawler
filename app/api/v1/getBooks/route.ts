@@ -15,10 +15,8 @@ export async function GET(req: NextRequest) {
         { status: 400 }
       );
     }
-    bookName = bookName
-      .trim()              
-      .replace(/\s+/g, " ")
-    const cacheKey = `search:${bookName.toLowerCase()}`;
+    bookName = bookName.trim()               
+    const cacheKey = `search:${bookName.toLowerCase().replace(/\s+/g, ":")}`;
 
     try {
       const cachedResults = await redis.get(cacheKey);
