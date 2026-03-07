@@ -1,13 +1,12 @@
 import { createClient, RedisClientType } from "redis";
 
 declare global {
-  var redisClient: RedisClientType | undefined;
-  var redisConnectPromise: Promise<void> | undefined;
-  var redisErrorListenerAttached: boolean | undefined;
+  var redis: RedisClientType | undefined;
+  var redisConnecting: Promise<RedisClientType> | undefined;
 }
 
 const redisClient: RedisClientType =
-  globalThis.redisClient ??
+  global.redis ??
   createClient({
     username: "default",
     password: process.env.REDIS_PASSWORD,
@@ -18,26 +17,20 @@ const redisClient: RedisClientType =
     },
   });
 
-globalThis.redisClient = redisClient;
+if (!global.redis) {
+  global.redis = redisClient;
 
-if (!globalThis.redisErrorListenerAttached) {
   redisClient.on("error", (err) => {
     console.error("Redis Error:", err);
   });
-  globalThis.redisErrorListenerAttached = true;
 }
 
-if (!redisClient.isOpen) {
-  globalThis.redisConnectPromise ??= redisClient
-    .connect()
-    .then(() => undefined)
-    .catch((err) => {
-      console.error("Redis Connection Error:", err);
-      throw err;
-    })
-    .finally(() => {
-      globalThis.redisConnectPromise = undefined;
-    });
-}
+export const redis = async (): Promise<RedisClientType> => {
+  if (redisClient.isOpen) return redisClient;
 
-export const redis: RedisClientType = redisClient;
+  if (!global.redisConnecting) {
+    global.redisConnecting = redisClient.connect().then(() => redisClient);
+  }
+
+  return global.redisConnecting;
+};

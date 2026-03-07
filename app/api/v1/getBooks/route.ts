@@ -2,10 +2,12 @@
 import { searchBook, BookResult } from "@/lib/crawler";
 import { redis } from "@/lib/redis";
 
-const CACHE_EXPIRATION = 60 * 60 * 24; 
+const CACHE_EXPIRATION = 60 * 60 * 24;
 
 export async function GET(req: NextRequest) {
   try {
+    const client = await redis(); // ✅ get singleton redis client
+
     const { searchParams } = new URL(req.url);
     let bookName = searchParams.get("q");
 
@@ -15,13 +17,14 @@ export async function GET(req: NextRequest) {
         { status: 400 }
       );
     }
-    bookName = bookName.trim()               
+
+    bookName = bookName.trim();
     const cacheKey = `search:${bookName.toLowerCase().replace(/\s+/g, ":")}`;
 
     try {
-      const cachedResults = await redis.get(cacheKey);
+      const cachedResults = await client.get(cacheKey); // ✅ use client
       if (cachedResults) {
-        return NextResponse.json(JSON.parse(cachedResults as string));
+        return NextResponse.json(JSON.parse(cachedResults));
       }
     } catch (cacheError) {
       console.error("Redis Cache Error:", cacheError);
@@ -30,14 +33,11 @@ export async function GET(req: NextRequest) {
     const results: BookResult[] = await searchBook(bookName);
 
     if (results.length === 0) {
-      return NextResponse.json(
-        { message: "No books found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "No books found" }, { status: 404 });
     }
 
     try {
-      await redis.set(cacheKey, JSON.stringify(results), {
+      await client.set(cacheKey, JSON.stringify(results), {
         EX: CACHE_EXPIRATION,
       });
     } catch (cacheError) {
