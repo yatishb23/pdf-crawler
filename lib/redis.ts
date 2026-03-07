@@ -23,9 +23,17 @@ if (!global.redis) {
     console.error("Redis Error:", err);
   });
 
-  if (!redis.isOpen) {
-    redis.connect().catch((err) => {
-      console.error("Redis Connection Error:", err);
-    });
-  }
+  (async () => {
+    if (!redis.isOpen) {
+      await redis.connect();
+      console.log("Redis connected");
+
+      try {
+        await redis.sendCommand(["CLIENT", "KILL", "TYPE", "normal"]);
+        console.log("Old Redis clients cleared");
+      } catch (err) {
+        console.error("Failed to clear clients:", err);
+      }
+    }
+  })();
 }
