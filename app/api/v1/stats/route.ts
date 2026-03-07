@@ -5,7 +5,9 @@ const KEY = "unique_visitors_crawler";
 
 export async function GET() {
   try {
-    const count = await redis.sCard(KEY);
+    const client = await redis(); // ✅ get redis client
+
+    const count = await client.sCard(KEY);
 
     return NextResponse.json({
       uniqueVisitors: count,
