@@ -24,7 +24,7 @@ const instrumentSerif = Instrument_Serif({
 
 export const metadata: Metadata = {
   title: {
-    default: "bookcrawler.io - AI-Powered Book Reading Tool",
+    default: "bookcrawler.io",
     template: "%s | bookcrawler.io",
   },
   description: "Extract data from books with intelligent web crawlers. Read, parse, and analyze any book with our AI-powered tool. Transform documents into actionable knowledge.",

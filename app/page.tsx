@@ -2,9 +2,11 @@ import { Metadata } from 'next'
 import HomeContent from '@/components/HomeContent'
 
 export const metadata: Metadata = {
-  title: 'bookcrawler.io - Read Any Book',
+  title: 'bookcrawler.io',
   description: 'Transform thousands of pages into instant knowledge with our intelligent PDF crawler. Read, understand, and extract exactly what you need from any PDF or book.',
   keywords: [
+    'bookcrawler.io',
+    "bookcrawler",
     'PDF crawler',
     'PDF reader',
     'book reader',
