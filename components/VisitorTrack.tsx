@@ -2,13 +2,18 @@
 
 import { useEffect, useState } from "react";
 
+const BACKEND_BASE_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") || "http://localhost:8000";
+
 export default function VisitorTracker() {
   const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
     const trackVisitor = async () => {
       try {
-        const res = await fetch("/api/v1/stats");
+        const res = await fetch(`${BACKEND_BASE_URL}/api/v1/stats`, {
+          credentials: "include",
+        });
         const data = await res.json();
         setCount(data.uniqueVisitors);
       } catch (error) {

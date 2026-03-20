@@ -1,29 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Search,
-  Download,
-  ExternalLink,
-  FileText,
-  Command,
-} from "lucide-react";
+import { Search, Download, ExternalLink, FileText, Command } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 
-let pdfjsLib: any = null;
-
-if (typeof window !== "undefined") {
-  import("pdfjs-dist").then((pdfjs) => {
-    pdfjsLib = pdfjs;
-
-    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-      "pdfjs-dist/build/pdf.worker.mjs",
-      import.meta.url,
-    ).toString();
-  });
-}
+const BACKEND_BASE_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") || "http://localhost:8000";
 
 interface BookResult {
   title: string;
@@ -43,7 +27,7 @@ export default function Dashboard() {
 
     try {
       const res = await fetch(
-        `/api/v1/getBooks?q=${encodeURIComponent(searchQuery)}`,
+        `${BACKEND_BASE_URL}/api/v1/getBooks?q=${encodeURIComponent(searchQuery)}`,
       );
 
       const data = await res.json();
@@ -173,69 +157,23 @@ function SkeletonCard() {
 }
 
 function PDFCard({ book }: { book: BookResult }) {
-  const [thumbnail, setThumbnail] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { threshold: 0.1 },
-    );
-
-    if (containerRef.current) observer.observe(containerRef.current);
-
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!isVisible || thumbnail || !pdfjsLib) return;
-
-    const render = async () => {
-      try {
-        const proxiedUrl = `/api/v1/proxyPdf?url=${encodeURIComponent(book.url)}`;
-
-        const loadingTask = pdfjsLib.getDocument({
-          url: proxiedUrl,
-          disableStream: true,
-          disableRange: true,
-        });
-
-        const pdf = await loadingTask.promise;
-
-        const page = await pdf.getPage(1);
-
-        const viewport = page.getViewport({ scale: 0.35 });
-
-        const canvas = document.createElement("canvas");
-
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        await page.render({
-          canvasContext: canvas.getContext("2d")!,
-          viewport,
-        }).promise;
-
-        setThumbnail(canvas.toDataURL());
-      } catch {}
-    };
-
-    render();
-  }, [isVisible, book.url, thumbnail]);
+  const [previewFailed, setPreviewFailed] = useState(false);
+  const previewUrl = `${BACKEND_BASE_URL}/api/v1/preview?url=${encodeURIComponent(book.url)}`;
 
   return (
     <motion.div
-      ref={containerRef}
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       className="group bg-zinc-900/40 border border-zinc-800 rounded-lg overflow-hidden hover:border-zinc-700 hover:-translate-y-1 transition-all duration-300"
     >
       <div className="aspect-3/4 bg-zinc-900 flex items-center justify-center overflow-hidden">
-        {thumbnail ? (
+        {!previewFailed ? (
           <img
-            src={thumbnail}
+            src={previewUrl}
+            alt={`Preview of ${book.title}`}
+            loading="lazy"
             className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition duration-500"
+            onError={() => setPreviewFailed(true)}
           />
         ) : (
           <FileText size={24} className="text-zinc-700" />
@@ -251,6 +189,7 @@ function PDFCard({ book }: { book: BookResult }) {
           <a
             href={book.url}
             target="_blank"
+            rel="noopener noreferrer"
             className="hover:text-white transition"
           >
             <ExternalLink size={14} />

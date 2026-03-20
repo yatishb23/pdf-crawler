@@ -39,3 +39,37 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# FastAPI / Python
+fastapi_backend/.venv/
+fastapi_backend/venv/
+fastapi_backend/__pycache__/
+fastapi_backend/**/__pycache__/
+fastapi_backend/*.egg-info/
+fastapi_backend/dist/
+fastapi_backend/build/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Redis/Database
+*.db
+*.sqlite
