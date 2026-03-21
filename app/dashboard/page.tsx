@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Download, ExternalLink, FileText, Command } from "lucide-react";
 
@@ -18,10 +18,14 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<BookResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!searchQuery.trim()) return;
+
+    // Blur the search field so mobile keyboards close after submit.
+    searchInputRef.current?.blur();
 
     setIsLoading(true);
 
@@ -64,23 +68,38 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative group mb-20"
+          className="relative mb-20"
         >
-          <Search
-            size={20}
-            className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-white transition"
-          />
+          <div className="relative overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/50 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.45)] transition-all duration-300 focus-within:border-zinc-600/80 focus-within:shadow-[0_16px_40px_rgba(0,0,0,0.55)]">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_50%,rgba(255,255,255,0.08),transparent_45%)]" />
 
-          <input
-            type="text"
-            placeholder="Search documents..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-zinc-900/40 border border-zinc-800 px-14 py-4 rounded-xl text-sm focus:outline-none focus:border-zinc-600 transition placeholder:text-zinc-600 backdrop-blur-xl"
-          />
+            <Search
+              size={18}
+              className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors group-focus-within:text-zinc-300"
+            />
 
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1 text-xs text-zinc-500">
-            <Command size={12} />K
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search documents..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="relative z-10 w-full bg-transparent pl-14 pr-16 py-4 md:py-5 text-sm md:text-base text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
+            />
+
+            <button
+              type="submit"
+              aria-label="Search documents"
+              className="absolute right-2 top-1/2 z-10 -translate-y-1/2 h-11 w-11 rounded-xl bg-white text-black hover:bg-zinc-200 transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+              disabled={isLoading || !searchQuery.trim()}
+            >
+              <Search size={18} />
+            </button>
+          </div>
+
+          <div className="mt-3 hidden sm:flex items-center justify-end gap-1 text-xs text-zinc-500">
+            <Command size={12} />
+            <span>Press Enter to search</span>
           </div>
         </motion.form>
 
