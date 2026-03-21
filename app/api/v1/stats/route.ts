@@ -5,7 +5,7 @@ const KEY = "unique_visitors_crawler";
 
 export async function GET() {
   try {
-    const client = await redis(); // ✅ get redis client
+    const client = await redis(); 
 
     const count = await client.sCard(KEY);
 
