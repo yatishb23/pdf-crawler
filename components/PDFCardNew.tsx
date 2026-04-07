@@ -21,7 +21,11 @@ interface PDFCardProps {
   isSaved?: boolean;
 }
 
-export default function PDFCard({ book, onSave, isSaved = false }: PDFCardProps) {
+export default function PDFCard({
+  book,
+  onSave,
+  isSaved = false,
+}: PDFCardProps) {
   const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,8 +43,13 @@ export default function PDFCard({ book, onSave, isSaved = false }: PDFCardProps)
 
   // Get relevance badge
   const getRelevanceBadge = (score: number) => {
-    if (score >= 0.8) return { label: "Highly Relevant", color: "bg-green-500/20 text-green-300" };
-    if (score >= 0.6) return { label: "Relevant", color: "bg-blue-500/20 text-blue-300" };
+    if (score >= 0.8)
+      return {
+        label: "Highly Relevant",
+        color: "bg-green-500/20 text-green-300",
+      };
+    if (score >= 0.6)
+      return { label: "Relevant", color: "bg-blue-500/20 text-blue-300" };
     return { label: "Moderate", color: "bg-yellow-500/20 text-yellow-300" };
   };
 
@@ -49,10 +58,10 @@ export default function PDFCard({ book, onSave, isSaved = false }: PDFCardProps)
       ([entry]) => {
         setIsVisible(entry.isIntersecting);
       },
-      { 
+      {
         threshold: 0.1,
-        rootMargin: "50px"
-      }
+        rootMargin: "50px",
+      },
     );
 
     if (containerRef.current) observer.observe(containerRef.current);
@@ -63,30 +72,40 @@ export default function PDFCard({ book, onSave, isSaved = false }: PDFCardProps)
   useEffect(() => {
     // Load PDF.js only when needed
     if (typeof window !== "undefined" && !pdfjsLib) {
-      import("pdfjs-dist").then((pdfjs) => {
-        pdfjsLib = pdfjs;
-        pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-          "pdfjs-dist/build/pdf.worker.mjs",
-          import.meta.url,
-        ).toString();
-      }).catch(() => {
-        console.warn("PDF.js failed to load");
-      });
+      import("pdfjs-dist")
+        .then((pdfjs) => {
+          pdfjsLib = pdfjs;
+          pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+            "pdfjs-dist/build/pdf.worker.mjs",
+            import.meta.url,
+          ).toString();
+        })
+        .catch(() => {
+          console.warn("PDF.js failed to load");
+        });
     }
   }, []);
 
   useEffect(() => {
     // Prevent multiple render attempts
-    if (!isVisible || thumbnail || isLoading || error || renderAttempted.current || !pdfjsLib) return;
+    if (
+      !isVisible ||
+      thumbnail ||
+      isLoading ||
+      error ||
+      renderAttempted.current ||
+      !pdfjsLib
+    )
+      return;
 
     const renderThumbnail = async () => {
       renderAttempted.current = true;
       setIsLoading(true);
       setError(null);
-      
+
       try {
         const proxiedUrl = `/api/v1/proxyPdf?url=${encodeURIComponent(book.url)}`;
-        
+
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000);
 
@@ -100,14 +119,14 @@ export default function PDFCard({ book, onSave, isSaved = false }: PDFCardProps)
 
         const pdf = await loadingTask.promise;
         const page = await pdf.getPage(1);
-        
+
         const scale = window.innerWidth < 768 ? 0.25 : 0.35;
         const viewport = page.getViewport({ scale });
 
         const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d", { 
+        const context = canvas.getContext("2d", {
           alpha: false,
-          willReadFrequently: false 
+          willReadFrequently: false,
         });
 
         if (!context) {
@@ -144,7 +163,8 @@ export default function PDFCard({ book, onSave, isSaved = false }: PDFCardProps)
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       viewport={{ once: true, margin: "50px" }}
-      className="group relative flex flex-col bg-gradient-to-b from-zinc-900/40 to-zinc-950/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl overflow-hidden hover:border-zinc-700/50 transition-all duration-300 hover:shadow-2xl hover:shadow-white/5"
+      onClick={() => window.open(book.url, "_blank")}
+      className="cursor-pointer group relative flex flex-col bg-gradient-to-b from-zinc-900/40 to-zinc-950/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl overflow-hidden hover:border-zinc-700/50 transition-all duration-300 hover:shadow-2xl hover:shadow-white/5"
     >
       {/* Thumbnail Container */}
       <div className="relative w-full aspect-[3/4] bg-zinc-950 overflow-hidden">
@@ -181,7 +201,9 @@ export default function PDFCard({ book, onSave, isSaved = false }: PDFCardProps)
         </div>
 
         {/* Relevance Badge */}
-        <div className={`absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1 ${relevance.color} bg-opacity-20 backdrop-blur-sm border border-current/30`}>
+        <div
+          className={`absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1 ${relevance.color} bg-opacity-20 backdrop-blur-sm border border-current/30`}
+        >
           <Zap size={12} />
           {relevance.label}
         </div>
@@ -203,11 +225,7 @@ export default function PDFCard({ book, onSave, isSaved = false }: PDFCardProps)
               <span className="text-zinc-500">by</span> {book.author}
             </p>
           )}
-          {book.year && (
-            <p className="text-zinc-500">
-              Published {book.year}
-            </p>
-          )}
+          {book.year && <p className="text-zinc-500">Published {book.year}</p>}
         </div>
 
         {/* File Size */}
@@ -223,6 +241,7 @@ export default function PDFCard({ book, onSave, isSaved = false }: PDFCardProps)
             href={book.url}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
             className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white text-black rounded-lg font-semibold text-xs hover:bg-zinc-100 transition-colors active:scale-95"
           >
             <Download size={14} />
@@ -231,18 +250,17 @@ export default function PDFCard({ book, onSave, isSaved = false }: PDFCardProps)
 
           {onSave && (
             <button
-              onClick={() => onSave(book)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSave(book);
+              }}
               className={`flex items-center justify-center px-3 py-2 rounded-lg font-semibold text-xs transition-all active:scale-95 ${
                 isSaved
                   ? "bg-green-500/20 text-green-300 border border-green-500/50"
                   : "bg-zinc-800 text-zinc-300 border border-zinc-700 hover:bg-zinc-700"
               }`}
             >
-              {isSaved ? (
-                <BookmarkCheck size={14} />
-              ) : (
-                <Bookmark size={14} />
-              )}
+              {isSaved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
             </button>
           )}
 
@@ -250,6 +268,7 @@ export default function PDFCard({ book, onSave, isSaved = false }: PDFCardProps)
             href={book.url}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
             className="flex items-center justify-center px-3 py-2 bg-zinc-800 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors active:scale-95"
           >
             <ExternalLink size={14} />

@@ -30,10 +30,10 @@ export default function PDFCard({ book }: { book: BookResult }) {
       ([entry]) => {
         setIsVisible(entry.isIntersecting);
       },
-      { 
+      {
         threshold: 0.1,
-        rootMargin: "50px"
-      }
+        rootMargin: "50px",
+      },
     );
 
     if (containerRef.current) observer.observe(containerRef.current);
@@ -44,31 +44,41 @@ export default function PDFCard({ book }: { book: BookResult }) {
   useEffect(() => {
     // Load PDF.js only when needed
     if (typeof window !== "undefined" && !pdfjsLib) {
-      import("pdfjs-dist").then((pdfjs) => {
-        pdfjsLib = pdfjs;
-        pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-          "pdfjs-dist/build/pdf.worker.mjs",
-          import.meta.url,
-        ).toString();
-      }).catch(() => {
-        // Silently fail if PDF.js fails to load
-        console.warn("PDF.js failed to load");
-      });
+      import("pdfjs-dist")
+        .then((pdfjs) => {
+          pdfjsLib = pdfjs;
+          pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+            "pdfjs-dist/build/pdf.worker.mjs",
+            import.meta.url,
+          ).toString();
+        })
+        .catch(() => {
+          // Silently fail if PDF.js fails to load
+          console.warn("PDF.js failed to load");
+        });
     }
   }, []);
 
   useEffect(() => {
     // Prevent multiple render attempts
-    if (!isVisible || thumbnail || isLoading || error || renderAttempted.current || !pdfjsLib) return;
+    if (
+      !isVisible ||
+      thumbnail ||
+      isLoading ||
+      error ||
+      renderAttempted.current ||
+      !pdfjsLib
+    )
+      return;
 
     const renderThumbnail = async () => {
       renderAttempted.current = true;
       setIsLoading(true);
       setError(null);
-      
+
       try {
         const proxiedUrl = `/api/v1/proxyPdf?url=${encodeURIComponent(book.url)}`;
-        
+
         // Add timeout to prevent hanging
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000);
@@ -83,19 +93,19 @@ export default function PDFCard({ book }: { book: BookResult }) {
         });
 
         const pdf = await loadingTask.promise;
-        
+
         // Get the first page
         const page = await pdf.getPage(1);
-        
+
         // Smaller scale for mobile
         const scale = window.innerWidth < 768 ? 0.25 : 0.35;
         const viewport = page.getViewport({ scale });
 
         // Create canvas with optimal size for mobile
         const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d", { 
+        const context = canvas.getContext("2d", {
           alpha: false,
-          willReadFrequently: false 
+          willReadFrequently: false,
         });
 
         if (!context) {
@@ -119,20 +129,26 @@ export default function PDFCard({ book }: { book: BookResult }) {
         // Compress the image for mobile
         const compressedImage = canvas.toDataURL("image/jpeg", 0.7);
         setThumbnail(compressedImage);
-        
+
         clearTimeout(timeoutId);
-        
+
         // Cleanup
         pdf.destroy();
         canvas.remove();
       } catch (err: any) {
         // Handle different error types gracefully
-        console.warn("Failed to render PDF thumbnail:", err?.message || "Unknown error");
-        
+        console.warn(
+          "Failed to render PDF thumbnail:",
+          err?.message || "Unknown error",
+        );
+
         // Set appropriate error message based on status code if available
         if (err?.message?.includes("410")) {
           setError("gone");
-        } else if (err?.name === "AbortError" || err?.message?.includes("timeout")) {
+        } else if (
+          err?.name === "AbortError" ||
+          err?.message?.includes("timeout")
+        ) {
           setError("timeout");
         } else {
           setError("generic");
@@ -174,7 +190,9 @@ export default function PDFCard({ book }: { book: BookResult }) {
         {error === "gone" ? (
           <>
             <FileX size={28} className="text-zinc-700 mb-2" />
-            <span className="text-[10px] text-zinc-600">PDF no longer available</span>
+            <span className="text-[10px] text-zinc-600">
+              PDF no longer available
+            </span>
           </>
         ) : error === "timeout" ? (
           <>
@@ -184,7 +202,9 @@ export default function PDFCard({ book }: { book: BookResult }) {
         ) : (
           <>
             <FileText size={28} className="text-zinc-700 mb-2" />
-            <span className="text-[10px] text-zinc-600">Preview unavailable</span>
+            <span className="text-[10px] text-zinc-600">
+              Preview unavailable
+            </span>
           </>
         )}
         <span className="text-[8px] text-zinc-700 mt-1 truncate max-w-full px-2">
@@ -199,7 +219,10 @@ export default function PDFCard({ book }: { book: BookResult }) {
       ref={containerRef}
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      className="group bg-zinc-900/40 border border-zinc-800 rounded-lg overflow-hidden hover:border-zinc-700 hover:-translate-y-1 transition-all duration-300"
+      onClick={() => {
+        if (error !== "gone") window.open(book.url, "_blank");
+      }}
+      className="cursor-pointer group bg-zinc-900/40 border border-zinc-800 rounded-lg overflow-hidden hover:border-zinc-700 hover:-translate-y-1 transition-all duration-300"
     >
       <div className="aspect-3/4 bg-zinc-900 flex items-center justify-center overflow-hidden relative min-h-35">
         {renderPreview()}
@@ -218,6 +241,7 @@ export default function PDFCard({ book }: { book: BookResult }) {
             className="hover:text-white transition p-1 hover:bg-zinc-800 rounded"
             aria-label="Open PDF in new tab"
             onClick={(e) => {
+              e.stopPropagation();
               // If we know the PDF is gone, prevent opening
               if (error === "gone") {
                 e.preventDefault();
@@ -228,12 +252,13 @@ export default function PDFCard({ book }: { book: BookResult }) {
             <ExternalLink size={14} />
           </a>
 
-          <a 
-            href={book.url} 
-            download 
+          <a
+            href={book.url}
+            download
             className="hover:text-white transition p-1 hover:bg-zinc-800 rounded"
             aria-label="Download PDF"
             onClick={(e) => {
+              e.stopPropagation();
               // If we know the PDF is gone, prevent downloading
               if (error === "gone") {
                 e.preventDefault();
