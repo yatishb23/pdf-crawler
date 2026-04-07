@@ -27,10 +27,16 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"search" | "recent">("search");
   const [recentBooks, setRecentBooks] = useState<BookResult[]>([]);
+  const [recentSearchQuery, setRecentSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const filteredRecentBooks = recentBooks.filter((book) =>
+    book.title.toLowerCase().includes(recentSearchQuery.toLowerCase()),
+  );
 
   useEffect(() => {
     const saved = localStorage.getItem("recentBooks");
+    
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -45,7 +51,7 @@ export default function Dashboard() {
   const handleBookClick = (book: BookResult) => {
     setRecentBooks((prev) => {
       const filtered = prev.filter((b) => b.url !== book.url);
-      const newRecent = [book, ...filtered].slice(0, 20);
+      const newRecent = [book, ...filtered].slice(0, 50);
       localStorage.setItem("recentBooks", JSON.stringify(newRecent));
       return newRecent;
     });
@@ -68,8 +74,9 @@ export default function Dashboard() {
       );
 
       const data = await res.json();
+      const fetchedBooks = Array.isArray(data) ? data : [];
 
-      setResults(Array.isArray(data) ? data : []);
+      setResults(fetchedBooks);
     } catch {
       setResults([]);
     } finally {
@@ -221,29 +228,40 @@ export default function Dashboard() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col w-full bg-zinc-900/40 border border-zinc-800/80 rounded-xl overflow-hidden divide-y divide-zinc-800/80"
+              className="space-y-8"
             >
-              {recentBooks.map((book, i) => (
-                <div
-                  key={`recent-${i}`}
-                  onClick={() => handleBookClick(book)}
-                  className="flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-800/50 transition-colors group"
-                >
-                  <div className="flex items-center gap-4">
-                    <FileText
-                      size={18}
-                      className="text-zinc-600 group-hover:text-white transition-colors"
+              <div className="relative max-w-md">
+                <Search
+                  size={16}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Filter recent books..."
+                  value={recentSearchQuery}
+                  onChange={(e) => setRecentSearchQuery(e.target.value)}
+                  className="w-full bg-zinc-900/30 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors"
+                />
+              </div>
+
+              {filteredRecentBooks.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-12">
+                  {filteredRecentBooks.map((book, i) => (
+                    <PDFCard
+                      key={`recent-${i}`}
+                      book={book}
+                      onClick={handleBookClick}
                     />
-                    <span className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">
-                      {book.title}
-                    </span>
-                  </div>
-                  <ExternalLink
-                    size={16}
-                    className="text-zinc-600 group-hover:text-white transition-colors"
-                  />
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <div className="flex flex-col items-center py-16 text-zinc-700 border-t border-zinc-900/50">
+                  <div className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.25em]">
+                    <div className="w-1.5 h-1.5 bg-zinc-700 rounded-full"></div>
+                    <span>No matches found</span>
+                  </div>
+                </div>
+              )}
             </motion.div>
           ) : (
             <motion.div
