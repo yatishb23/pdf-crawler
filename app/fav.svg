@@ -4,12 +4,13 @@
   <rect x="10" y="10" width="80" height="80" rx="25" ry="25" fill="white" />
   
   <text 
-    x="50%" 
-    y="52%" 
+    x="50" 
+    y="52" 
     text-anchor="middle" 
     dominant-baseline="middle" 
     font-family="Arial, sans-serif" 
     font-weight="900" 
     font-size="50" 
-    fill="black">B</text>
+    fill="black"
+    transform="rotate(-10, 50, 50)">B</text>
 </svg>
