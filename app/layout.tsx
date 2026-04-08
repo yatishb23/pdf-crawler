@@ -46,9 +46,9 @@ export const metadata: Metadata = {
   publisher: "bookcrawler.io",
   category: "Technology",
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
+    icon: "/fav.svg",
+    shortcut: "/fav.svg",
+    apple: "/fav.svg",
   },
   manifest: "/site.webmanifest",
   viewport: {
