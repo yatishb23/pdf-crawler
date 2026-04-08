@@ -27,7 +27,8 @@ export const metadata: Metadata = {
     default: "bookcrawler.io",
     template: "%s | bookcrawler.io",
   },
-  description: "Extract data from books with intelligent web crawlers. Read, parse, and analyze any book with our AI-powered tool. Transform documents into actionable knowledge.",
+  description:
+    "Extract data from books with intelligent web crawlers. Read, parse, and analyze any book with our AI-powered tool. Transform documents into actionable knowledge.",
   applicationName: "bookcrawler.io",
   referrer: "origin-when-cross-origin",
   keywords: [
@@ -45,11 +46,6 @@ export const metadata: Metadata = {
   creator: "bookcrawler.io",
   publisher: "bookcrawler.io",
   category: "Technology",
-  icons: {
-    icon: "/fav.svg",
-    shortcut: "/fav.svg",
-    apple: "/fav.svg",
-  },
   manifest: "/site.webmanifest",
   viewport: {
     width: "device-width",
@@ -69,7 +65,7 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} antialiased bg-black text-white selection:bg-white selection:text-black font-sans`}
       >
         <Navbar />
-        <Visitors/>
+        <Visitors />
         {children}
       </body>
     </html>
