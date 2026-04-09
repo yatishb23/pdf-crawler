@@ -1,23 +1,23 @@
 import { NextResponse } from "next/server";
-import { redis } from "@/lib/redis";
 
-const KEY = "unique_visitors_crawler";
+const EC2_BACKEND_URL = process.env.BACKEND_API_URL || "http://13.61.24.161";
 
 export async function GET() {
   try {
-    const client = await redis(); 
-
-    const count = await client.sCard(KEY);
-
-    return NextResponse.json({
-      uniqueVisitors: count,
+    const res = await fetch(`${EC2_BACKEND_URL}/api/v1/stats`, {
+      cache: "no-store",
     });
+
+    if (!res.ok) throw new Error("Backend response not ok");
+
+    const data = await res.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Redis Error:", error);
+    console.error("Backend Proxy Error:", error);
 
     return NextResponse.json(
-      { error: "Failed to fetch visitor count" },
-      { status: 500 }
+      { error: "Failed to fetch visitor count", uniqueVisitors: 0 },
+      { status: 500 },
     );
   }
 }
