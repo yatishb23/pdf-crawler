@@ -65,6 +65,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} antialiased bg-black text-white selection:bg-white selection:text-black font-sans`}
       >
+        <Analytics/>
         <Navbar />
         <Visitors />
         {children}
