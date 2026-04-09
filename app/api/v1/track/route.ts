@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
 
-const EC2_BACKEND_URL = process.env.BACKEND_API_URL || "http://13.61.24.161";
+const EC2_BACKEND_URL = process.env.BACKEND_API_URL || "http://18.214.205.25";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     const res = await axios.get(`${EC2_BACKEND_URL}/api/v1/track`, {
       headers: {
         cookie: cookieHeader,
-      }
+      },
     });
 
     const response = NextResponse.json(res.data);

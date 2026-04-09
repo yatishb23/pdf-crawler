@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
 
-const EC2_BACKEND_URL = process.env.BACKEND_API_URL || "http://13.61.24.161";
+const EC2_BACKEND_URL = process.env.BACKEND_API_URL || "http://18.214.205.25";
 
 export const dynamic = "force-dynamic"; // Ensure it never caches in production
 
