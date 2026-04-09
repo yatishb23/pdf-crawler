@@ -68,6 +68,7 @@ export default function RootLayout({
         <Navbar />
         <Visitors />
         {children}
+        <Analytics />
       </body>
     </html>
   );
