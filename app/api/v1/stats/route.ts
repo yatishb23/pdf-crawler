@@ -1,22 +1,26 @@
 import { NextResponse } from "next/server";
+import axios from "axios";
 
 const EC2_BACKEND_URL = process.env.BACKEND_API_URL || "http://13.61.24.161";
 
+export const dynamic = "force-dynamic"; // Ensure it never caches in production
+
 export async function GET() {
   try {
-    const res = await fetch(`${EC2_BACKEND_URL}/api/v1/stats`, {
-      cache: "no-store",
+    const res = await axios.get(`${EC2_BACKEND_URL}/api/v1/stats`, {
+      timeout: 10000,
     });
 
-    if (!res.ok) throw new Error("Backend response not ok");
-
-    const data = await res.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Backend Proxy Error:", error);
+    return NextResponse.json(res.data);
+  } catch (error: any) {
+    console.error("Backend Proxy Error:", error?.message || error);
 
     return NextResponse.json(
-      { error: "Failed to fetch visitor count", uniqueVisitors: 0 },
+      {
+        error: "Failed to fetch visitor count",
+        uniqueVisitors: 0,
+        details: error?.message,
+      },
       { status: 500 },
     );
   }
