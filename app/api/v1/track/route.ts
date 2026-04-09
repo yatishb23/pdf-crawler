@@ -14,7 +14,8 @@ export async function GET(request: Request) {
         cookie: cookieHeader,
       },
     });
-
+    console.log(res.data);
+    
     const response = NextResponse.json(res.data);
 
     // Forward any cookies set by the backend

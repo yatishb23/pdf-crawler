@@ -8,7 +8,8 @@ export const dynamic = "force-dynamic"; // Ensure it never caches in production
 export async function GET() {
   try {
     const res = await axios.get(`${EC2_BACKEND_URL}/api/v1/stats`);
-
+    console.log(res.data);
+    
     return NextResponse.json(res.data);
   } catch (error: any) {
     console.error("Backend Proxy Error:", error?.message || error);
