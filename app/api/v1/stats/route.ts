@@ -1,16 +1,31 @@
 import { NextResponse } from "next/server";
-import axios from "axios";
 
-const EC2_BACKEND_URL = process.env.BACKEND_API_URL || "http://18.214.205.25";
+const EC2_BACKEND_URL =
+  process.env.BACKEND_API_URL || "http://18.214.205.25";
 
-export const dynamic = "force-dynamic"; // Ensure it never caches in production
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const res = await axios.get(`${EC2_BACKEND_URL}/api/v1/stats`);
-    console.log(res.data);
-    
-    return NextResponse.json(res.data);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000); 
+
+    const backendRes = await fetch(
+      `${EC2_BACKEND_URL}/api/v1/stats`,
+      {
+        method: "GET",
+        signal: controller.signal,
+      }
+    );
+
+    clearTimeout(timeout);
+
+    const data = await backendRes.json();
+
+    return NextResponse.json(data, {
+      status: backendRes.status,
+    });
+
   } catch (error: any) {
     console.error("Backend Proxy Error:", error?.message || error);
 
@@ -20,7 +35,7 @@ export async function GET() {
         uniqueVisitors: 0,
         details: error?.message,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

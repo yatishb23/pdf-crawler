@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
 
-const EC2_BACKEND_URL = process.env.BACKEND_API_URL || "http://18.214.205.25";
+const EC2_BACKEND_URL =
+  process.env.BACKEND_API_URL || "http://18.214.205.25";
 
 export const dynamic = "force-dynamic";
 
@@ -13,18 +14,24 @@ export async function GET(request: Request) {
       headers: {
         cookie: cookieHeader,
       },
+      withCredentials: true,
+      validateStatus: () => true, // ✅ prevent axios throw
     });
-    console.log(res.data);
-    
-    const response = NextResponse.json(res.data);
 
-    // Forward any cookies set by the backend
+    const response = NextResponse.json(res.data, {
+      status: res.status,
+    });
+
+    // ✅ forward cookies from backend
     const setCookie = res.headers["set-cookie"];
-    if (setCookie && setCookie.length > 0) {
-      // Axios returns set-cookie as an array
-      setCookie.forEach((cookieStr: string) => {
-        response.headers.append("set-cookie", cookieStr);
-      });
+    if (setCookie) {
+      if (Array.isArray(setCookie)) {
+        setCookie.forEach((c: string) =>
+          response.headers.append("set-cookie", c)
+        );
+      } else {
+        response.headers.set("set-cookie", setCookie);
+      }
     }
 
     return response;
@@ -33,7 +40,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(
       { newVisitor: false, count: 0, details: error?.message },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
