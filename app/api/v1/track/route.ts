@@ -1,46 +1,40 @@
 import { NextResponse } from "next/server";
-import axios from "axios";
+import { cookies } from "next/headers";
+import { redis } from "@/lib/redis";
 
-const EC2_BACKEND_URL =
-  process.env.BACKEND_API_URL || "http://18.214.205.25";
+const KEY = "unique_visitors_crawler";
 
-export const dynamic = "force-dynamic";
+export async function GET() {
+  const client = await redis(); // ✅ get redis client
 
-export async function GET(request: Request) {
-  try {
-    const cookieHeader = request.headers.get("cookie") || "";
+  const cookieStore = await cookies();
+  const existing = cookieStore.get("visitorId");
 
-    const res = await axios.get(`${EC2_BACKEND_URL}/api/v1/track`, {
-      headers: {
-        cookie: cookieHeader,
-      },
-      withCredentials: true,
-      validateStatus: () => true, // ✅ prevent axios throw
+  if (!existing) {
+    const id = crypto.randomUUID();
+
+    await client.sAdd(KEY, id);
+
+    const count = await client.sCard(KEY);
+
+    const response = NextResponse.json({
+      newVisitor: true,
+      count,
     });
 
-    const response = NextResponse.json(res.data, {
-      status: res.status,
+    response.cookies.set("visitorId", id, {
+      httpOnly: true,
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
     });
-
-    // ✅ forward cookies from backend
-    const setCookie = res.headers["set-cookie"];
-    if (setCookie) {
-      if (Array.isArray(setCookie)) {
-        setCookie.forEach((c: string) =>
-          response.headers.append("set-cookie", c)
-        );
-      } else {
-        response.headers.set("set-cookie", setCookie);
-      }
-    }
 
     return response;
-  } catch (error: any) {
-    console.error("Backend Proxy Error:", error?.message || error);
-
-    return NextResponse.json(
-      { newVisitor: false, count: 0, details: error?.message },
-      { status: 500 }
-    );
   }
+
+  const count = await client.sCard(KEY);
+
+  return NextResponse.json({
+    newVisitor: false,
+    count,
+  });
 }
