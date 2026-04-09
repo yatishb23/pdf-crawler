@@ -7,9 +7,7 @@ export const dynamic = "force-dynamic"; // Ensure it never caches in production
 
 export async function GET() {
   try {
-    const res = await axios.get(`${EC2_BACKEND_URL}/api/v1/stats`, {
-      timeout: 10000,
-    });
+    const res = await axios.get(`${EC2_BACKEND_URL}/api/v1/stats`);
 
     return NextResponse.json(res.data);
   } catch (error: any) {

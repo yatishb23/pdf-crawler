@@ -12,8 +12,7 @@ export async function GET(request: Request) {
     const res = await axios.get(`${EC2_BACKEND_URL}/api/v1/track`, {
       headers: {
         cookie: cookieHeader,
-      },
-      timeout: 10000,
+      }
     });
 
     const response = NextResponse.json(res.data);
