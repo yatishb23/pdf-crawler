@@ -32,7 +32,8 @@ const weight = (status: true | false | undefined) =>
   status === true ? 2 : status === false ? 0 : 1;
 
 export default function Dashboard() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [results, setResults] = useState<BookResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [thumbnailStatus, setThumbnailStatus] = useState<
@@ -41,14 +42,20 @@ export default function Dashboard() {
 
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!searchQuery.trim()) return;
+    if (!firstName.trim() || !lastName.trim()) return;
+
+    const combinedQuery = `${firstName.trim()} ${lastName.trim()}`;
 
     setIsLoading(true);
     setThumbnailStatus({});
     try {
-      const res = await fetch(
-        `/api/v1/getBooks?q=${encodeURIComponent(searchQuery)}`,
-      );
+      const params = new URLSearchParams({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+      });
+      const res = await fetch(`/api/v1/getResumes?${params.toString()}`, {
+        method: "GET",
+      });
       const data = await res.json();
       setResults(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -61,8 +68,7 @@ export default function Dashboard() {
   // Recompute sort every time thumbnailStatus changes
   const sortedResults = useMemo(() => {
     return [...results].sort(
-      (a, b) =>
-        weight(thumbnailStatus[b.url]) - weight(thumbnailStatus[a.url]),
+      (a, b) => weight(thumbnailStatus[b.url]) - weight(thumbnailStatus[a.url]),
     );
   }, [results, thumbnailStatus]);
 
@@ -86,11 +92,11 @@ export default function Dashboard() {
             transition={{ duration: 0.8 }}
           >
             <h1 className="font-serif text-6xl md:text-7xl tracking-tight leading-none mb-6">
-              Library
+              Resumes
               <span className="opacity-70 text-zinc-400">.</span>
             </h1>
             <p className="text-lg md:text-xl text-zinc-500 mb-8 max-w-lg leading-relaxed mix-blend-plus-lighter italic">
-              Access your knowledge base.
+              Find anyone's curriculum vitae.
             </p>
           </motion.div>
 
@@ -113,23 +119,49 @@ export default function Dashboard() {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="relative w-full mb-24"
         >
-          <form onSubmit={handleSearch} className="relative group">
-            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-white transition-colors">
-              <Search size={22} />
+          <form
+            onSubmit={handleSearch}
+            className="relative flex flex-col sm:flex-row gap-4"
+          >
+            <div className="relative flex-1 group">
+              <div className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-white transition-colors">
+                <Search size={22} />
+              </div>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="First Name (e.g. Yatish)"
+                className="w-full bg-zinc-900/20 backdrop-blur-md border border-zinc-800/50 rounded-2xl pl-16 pr-6 py-6 text-xl placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 transition-all selection:bg-zinc-700"
+              />
             </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Find a document..."
-              className="w-full bg-zinc-900/20 backdrop-blur-md border border-zinc-800/50 rounded-2xl pl-16 pr-32 py-6 text-xl placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 transition-all selection:bg-zinc-700"
-            />
+
+            <div className="relative flex-1 group">
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Surname (e.g. Badgujar)"
+                className="w-full bg-zinc-900/20 backdrop-blur-md border border-zinc-800/50 rounded-2xl px-6 sm:pr-32 py-6 text-xl placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 transition-all selection:bg-zinc-700"
+              />
+              <button
+                type="submit"
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all hidden sm:block"
+              >
+                {isLoading ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  "Search"
+                )}
+              </button>
+            </div>
+
             <button
               type="submit"
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all"
+              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-5 py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all sm:hidden w-full"
             >
               {isLoading ? (
-                <Loader2 size={14} className="animate-spin" />
+                <Loader2 size={14} className="animate-spin mx-auto" />
               ) : (
                 "Search"
               )}

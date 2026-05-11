@@ -6,6 +6,42 @@
   display: none;
 }
 
+@utility shadow-clay {
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.07),
+    inset 0 -2px 1px rgba(0, 0, 0, 0.3),
+    6px 6px 0px 0px rgba(0, 0, 0, 0.45);
+}
+
+@utility shadow-clay-sm {
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.07),
+    inset 0 -2px 1px rgba(0, 0, 0, 0.3),
+    4px 4px 0px 0px rgba(0, 0, 0, 0.4);
+}
+
+@utility shadow-clay-lg {
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.07),
+    inset 0 -3px 1px rgba(0, 0, 0, 0.3),
+    10px 10px 0px 0px rgba(0, 0, 0, 0.45);
+}
+
+@utility shadow-clay-hover {
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.12),
+    inset 0 -2px 1px rgba(0, 0, 0, 0.2),
+    8px 8px 0px 0px rgba(0, 0, 0, 0.5);
+}
+
+@utility bg-clay {
+  background: linear-gradient(to bottom, oklch(0.269 0 0), oklch(0.205 0 0));
+}
+
+@utility bg-clay-light {
+  background: linear-gradient(to bottom, oklch(0.37 0 0), oklch(0.27 0 0));
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
